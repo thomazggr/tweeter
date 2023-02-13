@@ -8,13 +8,21 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException, SessionNotCreatedException
 
+from tweeter.cookies import Cookies
 
 class Client():
-    def __init__(self, username: str, password: str, two_fa_code: str = None) -> None:
+    def __init__(self, 
+        username: str, 
+        password: str, 
+        two_fa_code: str = None,
+        load_cookies: bool = False,
+        cookies_dir: str = None) -> None:
         self.curr_dir = f"{os.getcwd()}"
         self.username = username
         self.password = password
         self.two_fa_code = two_fa_code
+        self.load_cookies = load_cookies
+        self.cookies_dir = cookies_dir if cookies_dir[-1] == "/" else f"{cookies_dir}/"
         self.twitter_base_url = "https://twitter.com"
         self.default_status_url = f"{self.twitter_base_url}/{username}/status/"
         self.match_user = re.compile(r"com/([a-zA-Z0-9]{1,200})/status")
@@ -27,13 +35,17 @@ class Client():
         self.default_sleep = 3
         pass
 
-    def authenticate(self):
+    def authenticate(self) -> None:
         try:
             self.driver = webdriver.Firefox()
+            cookies = Cookies(cookies_dir = self.cookies_dir)
         except (WebDriverException or SessionNotCreatedException) as e:
             # Alert with error
             print("DRIVER ERROR!")
             quit()
+
+        if self.load_cookies and self.cookies_dir:
+            self.driver = cookies.load(self.username, self.driver)
 
         wait = WebDriverWait(self.driver, 30)
         self.driver.get(f"{self.twitter_base_url}{self.login_twitter}")
@@ -104,7 +116,8 @@ class Client():
         else:
             #TODO: No 2FA code, 2FA code expired, ask for 2FA later, separate 2FA auth
             pass
-
+        
+        cookies.save(self.driver.get_cookies(), self.username)
 
 
     def delete_tweet(self, tweet_id: int):

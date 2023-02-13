@@ -164,3 +164,6 @@ run.py
 
 # Remove drivers
 drivers/
+
+# Test cookies
+cookies/
