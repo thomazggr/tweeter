@@ -129,6 +129,9 @@ class Client():
 
         tweet_owner = self.match_user.match(current_url).group(1)
 
+        if self.username == tweet_owner:
+            pass
+
         #TODO: Test tweet owner so it can be `Deleted` or `Unretweeted`
         # if self.username == tweet_owner:
 
